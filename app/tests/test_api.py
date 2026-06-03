@@ -7,6 +7,12 @@ def client():
     with TestClient(app) as c:
         yield c
 
+def test_health_check(client):
+    # Test generico de salud
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "healthy", "database": "connected"}
+
 
 def test_ingest_telemetry(client):
     #Prueba que la API guarda los datos del sensor.
@@ -31,3 +37,9 @@ def test_get_reactor_analytics(client):
     assert data["reactor_id"] == "TEST-999"
     assert data["reading_count"] >= 1
     assert data["avg_temperature"] == 150.0
+
+def test_get_analytics_not_found(client):
+
+    response = client.get("/api/v1/analytics/REACTOR-FANTASMA-999")
+    assert response.status_code == 404
+    assert "detail" in response.json()

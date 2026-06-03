@@ -43,15 +43,15 @@ async def get_reactor_analytics(reactor_id: str, db: AsyncSession = Depends(get_
     ).where(TelemetryData.reactor_id == reactor_id)
 
     result = await db.execute(query)
-    row = result.fetchone()
+    stats = result.fetchone()
 
     # Si el reactor no tiene lecturas, el count sera 0
-    if not row or row.reading_count == 0:
-        raise HTTPException(status_code=404, detail="No hay datos registrados para este reactor.")
+    if not stats or stats.reading_count == 0:
+        raise HTTPException(status_code=404, detail="No hay datos registrados para el reactor '{reactor_id}'.")
 
     return ReactorAnalytics(
         reactor_id=reactor_id,
-        reading_count=row.reading_count,
-        avg_temperature=round(row.avg_temperature, 2),
-        max_pressure=round(row.max_pressure, 2)
+        reading_count=stats.reading_count,
+        avg_temperature=round(stats.avg_temperature, 2),
+        max_pressure=round(stats.max_pressure, 2)
     )
